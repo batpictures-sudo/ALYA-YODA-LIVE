@@ -1,0 +1,16 @@
+name: Public Actions smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm public runner
+        run: |
+          echo "ALYA-YODA-LIVE public Actions runner is working."
+          uname -a
+          python3 --version
