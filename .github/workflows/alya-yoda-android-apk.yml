@@ -1,0 +1,36 @@
+name: Alya Yoda - Android APK (public runner, no paid AI)
+on:
+  push:
+    branches: ["experiment/alya-yoda-android-one-icon-20261122"]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack Android source
+        run: |
+          base64 -d android-one-icon-payload.b64 > /tmp/android-one-icon.zip
+          unzip -q /tmp/android-one-icon.zip
+          python android-one-icon/test_project.py
+          node --check android-one-icon/app/src/main/assets/yodabridge/page.js
+          node --check android-one-icon/app/src/main/assets/yodabridge/bridge.js
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Assemble APK
+        working-directory: android-one-icon
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Publish installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALYA-YODA-ANDROID-APK
+          path: android-one-icon/app/build/outputs/apk/debug/*.apk
+          retention-days: 7
