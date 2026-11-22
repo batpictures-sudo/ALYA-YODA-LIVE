@@ -17,7 +17,11 @@ jobs:
           base64 -d android-one-icon-payload.b64 > /tmp/android-one-icon.zip
           unzip -q /tmp/android-one-icon.zip
           python3 fix-single-tap.py
+          python3 fix-ux-v3.py
           python android-one-icon/test_project.py
+          mkdir -p /tmp/alya_command_test
+          javac -d /tmp/alya_command_test android-one-icon/app/src/main/java/hu/alya/yoda/CommandLogic.java android-one-icon/CommandLogicTest.java
+          java -cp /tmp/alya_command_test hu.alya.yoda.CommandLogicTest
           node --check android-one-icon/app/src/main/assets/yodabridge/page.js
           node --check android-one-icon/app/src/main/assets/yodabridge/bridge.js
       - uses: actions/setup-java@v4
