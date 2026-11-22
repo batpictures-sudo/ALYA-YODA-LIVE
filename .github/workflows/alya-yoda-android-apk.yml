@@ -16,19 +16,10 @@ jobs:
         run: |
           base64 -d android-one-icon-payload.b64 > /tmp/android-one-icon.zip
           unzip -q /tmp/android-one-icon.zip
+          python3 fix-single-tap.py
           python android-one-icon/test_project.py
           node --check android-one-icon/app/src/main/assets/yodabridge/page.js
           node --check android-one-icon/app/src/main/assets/yodabridge/bridge.js
-      - name: Inspect Android UI and login source (temporary developer diagnostics)
-        run: |
-          find android-one-icon/app/src/main -type f | sort | head -100
-          for f in android-one-icon/app/src/main/AndroidManifest.xml android-one-icon/app/src/main/java/hu/alya/yoda/MainActivity.java android-one-icon/app/src/main/java/hu/alya/yoda/VoiceCommands.java android-one-icon/app/src/main/assets/yodabridge/page.js android-one-icon/app/src/main/assets/yodabridge/bridge.js; do
-            if [ -f "$f" ]; then
-              echo "::group::SOURCE $f"
-              sed -n '1,360p' "$f"
-              echo "::endgroup::"
-            fi
-          done
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
