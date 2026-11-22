@@ -3,6 +3,8 @@ on:
   push:
     branches: ["experiment/alya-yoda-android-one-icon-20261122"]
   workflow_dispatch:
+  pull_request:
+    branches: ["main"]
 jobs:
   build:
     runs-on: ubuntu-latest
