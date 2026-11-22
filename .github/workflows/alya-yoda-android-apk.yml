@@ -1,0 +1,57 @@
+name: Alya Yoda - Android APK (public runner, no paid AI)
+on:
+  push:
+    branches: ["experiment/alya-yoda-android-one-icon-20261122"]
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack Android source
+        run: |
+          base64 -d android-one-icon-payload.b64 > /tmp/android-one-icon.zip
+          unzip -q /tmp/android-one-icon.zip
+          python3 fix-single-tap.py
+          python3 fix-ux-v3.py
+          python3 fix-readaloud-v4.py
+          python3 fix-autoplay-v5.py
+          python3 fix-safety-v6.py
+          python3 fix-compact-ui-v10.py
+          python3 fix-pairing-v11.py
+          python3 fix-pair-share-v12.py
+          python3 fix-kiosk-v13.py
+          python3 fix-startup-diagnostics-v14.py
+          python android-one-icon/test_project.py
+          mkdir -p /tmp/alya_command_test
+          javac -d /tmp/alya_command_test android-one-icon/app/src/main/java/hu/alya/yoda/CommandLogic.java android-one-icon/CommandLogicTest.java
+          java -cp /tmp/alya_command_test hu.alya.yoda.CommandLogicTest
+          node --check android-one-icon/app/src/main/assets/yodabridge/page.js
+          node --check android-one-icon/app/src/main/assets/yodabridge/bridge.js
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK 35
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          MANAGER=$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)
+          test -x "$MANAGER"
+          yes | "$MANAGER" --licenses > /dev/null || true
+          "$MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Assemble APK
+        working-directory: android-one-icon
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Publish installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALYA-YODA-ANDROID-APK
+          path: android-one-icon/app/build/outputs/apk/debug/*.apk
+          retention-days: 7
