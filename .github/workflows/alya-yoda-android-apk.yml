@@ -25,8 +25,11 @@ jobs:
           java-version: '17'
       - name: Set up Android SDK 35
         run: |
-          echo 'y' | sdkmanager --licenses > /dev/null || true
-          sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          MANAGER=$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)
+          test -x "$MANAGER"
+          yes | "$MANAGER" --licenses > /dev/null || true
+          "$MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
